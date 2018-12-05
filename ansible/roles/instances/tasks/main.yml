@@ -1,0 +1,126 @@
+- name: create a disk
+  gcp_compute_disk:
+    name: "{{ item }}"
+    size_gb: "{{ disk_size }}"
+    source_image: "{{ source_image }}"
+    zone: "{{ gcp_zone }}"
+    project: "{{ gcp_project }}"
+    auth_kind: "{{ gcp_cred_kind }}"
+    service_account_file: "{{ gcp_cred_file }}"
+    state: present
+  register: disk
+  loop: "{{ disks }}"
+
+- name: create a network
+  gcp_compute_network:
+    name: "tpc-c-network"
+    project: "{{ gcp_project }}"
+    auth_kind: "{{ gcp_cred_kind }}"
+    service_account_file: "{{ gcp_cred_file }}"
+    state: present
+  register: network
+
+- name: create a address
+  gcp_compute_address:
+    name: "{{ item }}"
+    region: "{{ gcp_region }}"
+    project: "{{ gcp_project }}"
+    auth_kind: "{{ gcp_cred_kind }}"
+    service_account_file: "{{ gcp_cred_file }}"
+    state: present
+  register: address
+  loop: "{{ addresses }}"
+
+- name: internal/external firewall rules
+  gcp_compute_firewall:
+    name: "internal-external-rules"
+    allowed:
+      - ip_protocol: tcp
+        ports:
+          - 22
+          - 80
+      - ip_protocol: icmp
+    network: "global/networks/{{ network.name }}"
+    project: "{{ gcp_project }}"
+    auth_kind: "{{ gcp_cred_kind }}"
+    service_account_file: "{{ gcp_cred_file }}"
+    state: present
+
+- name: internal firewall rules
+  gcp_compute_firewall:
+    name: "internal-rules"
+    allowed:
+      - ip_protocol: tcp
+        ports:
+          - 5432
+          - 5000
+    source_ranges:
+      - 10.128.0.0/9
+    network: "global/networks/{{ network.name }}"
+    project: "{{ gcp_project }}"
+    auth_kind: "{{ gcp_cred_kind }}"
+    service_account_file: "{{ gcp_cred_file }}"
+    state: present
+
+- name: create a instance
+  gcp_compute_instance:
+    name: "instance-{{ '%02d' | format(item.index) }}"
+    machine_type: "{{ gcp_machine_type }}"
+    disks:
+      - auto_delete: true
+        boot: true
+        source: "{{ disk.results[item.index - 1] }}"
+    metadata:
+      startup-script: |
+        #!/bin/bash
+        yum update -y
+        yum upgrade -y
+        yum install -y python2
+        yum install -y scipy
+        yum install -y tmux
+        yum install -y java-1.8.0-openjdk-headless-debug.x86_64
+    tags:
+      items: "{{ item.tag }}"
+    network_interfaces:
+      - network: "{{ network }}"
+        access_configs:
+        - name: External NAT
+          nat_ip: "{{ address.results[item.index - 1] }}"
+          type: ONE_TO_ONE_NAT
+    scheduling:
+      preemptible: true
+    zone: "{{ gcp_zone }}"
+    project: "{{ gcp_project }}"
+    auth_kind: "{{ gcp_cred_kind }}"
+    service_account_file: "{{ gcp_cred_file }}"
+    service_accounts:
+      - scopes:
+        - https://www.googleapis.com/auth/cloud-platform
+        - https://www.googleapis.com/auth/devstorage.read_write
+    state: present
+  register: instance
+  loop: "{{ instances }}"
+
+- name: Add hosts to in memory inventory
+  add_host:
+    name: "{{ item.networkInterfaces[0].accessConfigs[0].natIP }}"
+    groups: "{{ item.tags['items'] | join(',') }}"
+  loop: "{{ instance.results }}"
+
+- name: Wait for instances to respond
+  wait_for:
+    host: "{{ item }}"
+    port: 22
+  loop: "{{ groups['all'] }}"
+
+# - name: Debug
+#   debug:
+#     msg: "{{ instance.results[0].tags['items'] | join(',') }}"
+
+# - name: wait for SSH for instances
+#   wait_for:
+#     delay: 10
+#     host: "{{ instance.networkInterfaces[0].accessConfigs[0].natIP }}"
+#     port: 22
+#     state: started
+#

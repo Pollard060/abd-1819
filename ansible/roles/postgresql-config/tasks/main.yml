@@ -1,0 +1,43 @@
+---
+
+- name: Install PostgreSQL
+  yum:
+    name: '{{ packages }}'
+    state: latest
+  vars:
+    packages:
+    - postgresql-server
+    - postgresql-contrib
+    - python-psycopg2
+
+- name: Create a new PostgreSQL database cluster
+  command: postgresql-setup initdb
+
+- name: Uncomment listen addresses configuration
+  replace:
+    path: "/var/lib/pgsql/data/postgresql.conf"
+    regexp: '^#listen_addresses'
+    replace: listen_addresses
+  notify:
+    - restart postgresql
+
+- name: Replace listen addresses
+  replace:
+    path: "/var/lib/pgsql/data/postgresql.conf"
+    regexp: "^listen_addresses\\s+=\\s+'(.*)'"
+    replace: "listen_addresses = '*'"
+  notify:
+    - restart postgresql
+
+- name: Add pg_hba.conf line to allow access from network
+  template:
+    src: pg_hba.conf.j2
+    dest: "/var/lib/pgsql/data/pg_hba.conf"
+  notify:
+    - restart postgresql
+
+- name: Ensure service is enabled and started
+  service:
+    name: postgresql
+    state: restarted
+    enabled: yes

@@ -1,0 +1,29 @@
+---
+
+- name: Download benchmark and showtpc script from storage
+  gc_storage:
+    bucket: "{{ bucket }}"
+    gs_access_key: "{{ gs_access_key }}"
+    gs_secret_key: "{{ gs_secret_key }}"
+    object: "{{ item }}"
+    dest: "/home/{{ user }}/{{ item }}"
+    mode: get
+  loop:
+    - tpc-c-0.1-SNAPSHOT-tpc-c.zip
+    - showtpc.py
+
+# Change showtpc.py mode
+- file:
+    path: "/home/{{ user }}/showtpc.py"
+    mode: 0755
+
+- name: Install unzip
+  yum:
+    name: unzip
+    state: latest
+
+- name: Unzip benchmark tpc-c-0.1-SNAPSHOT-tpc-c.zip
+  unarchive:
+    src: "/home/{{ user }}/tpc-c-0.1-SNAPSHOT-tpc-c.zip"
+    dest: "/home/{{ user }}"
+    remote_src: yes

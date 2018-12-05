@@ -1,0 +1,20 @@
+- name: GCP Teardown
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  tasks:
+    # - name: Debug
+    #   debug:
+    #     msg: "{{ hostvars[item] }}"
+    #   loop: "{{ groups['all'] }}"
+
+    - name: Teardown instances
+      gcp_compute_instance:
+        name: "{{ hostvars[item].name }}"
+        zone: "{{ hostvars[item].zone }}"
+        project: "{{ hostvars[item].project }}"
+        auth_kind: "serviceaccount"
+        service_account_file: "~/.gcloud/credentials-tpc-c.json"
+        state: absent
+      loop: "{{ groups['all'] }}"
+

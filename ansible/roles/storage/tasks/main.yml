@@ -1,0 +1,22 @@
+---
+
+- name: Create a bucket
+  gcp_storage_bucket:
+      name: "{{ bucket }}"
+      location: "{{ gcp_region }}"
+      storage_class: REGIONAL
+      project: "{{ gcp_project }}"
+      auth_kind: "{{ gcp_cred_kind }}"
+      service_account_file: "{{ gcp_cred_file }}"
+      state: present
+
+- name: Upload content
+  gc_storage:
+    bucket: "{{ bucket }}"
+    object: key.txt
+    src: "/usr/local/{{ item }}"
+    mode: put
+    permission: public-read
+  loop:
+    - tpc-c-0.1-SNAPSHOT-tpc-c.zip
+    - showtpc.py

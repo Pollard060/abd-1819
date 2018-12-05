@@ -1,0 +1,51 @@
+- hosts: all
+  become: yes 
+  vars:
+    ############### MODIFY VARIABLES AS NEEDED ###############
+    user: claudia
+    bucket: 'storage-tcp-c'
+    gs_access_key: 'GOOG7LPNDJF3TYHFGMMTKMBD'
+    gs_secret_key: 'cbA50GCTXbYyp4XsIaSmlW7UFKyuI+cqJLXRyL8p'
+    path: "/home/{{ user }}/tpc-c-0.1-SNAPSHOT"
+    workload_file: "{{ path }}/etc/workload-config.properties"
+
+    # Workload properties:
+    number_warehouses: '1'
+    measurement_time: '1'
+    ##########################################################
+  tasks:
+    - name: Replace number of warehouses
+      replace:
+        path: "{{ workload_file }}"
+        regexp: "^tpcc.number.warehouses=.*"
+        replace: "tpcc.number.warehouses={{ number_warehouses }}"
+
+    - name: Replace measurement time
+      replace:
+        path: "{{ workload_file }}"
+        regexp: "^measurement.time=.*"
+        replace: "measurement.time={{ measurement_time }}"
+
+    - name: Run script
+      shell: "./run.sh"
+      args:
+        chdir: "{{ path }}"
+
+    - name: Find result file from run
+      find:
+        paths: "{{ path }}"
+        age: '-10'
+        age_stamp: ctime
+        patterns: "^.*\\.dat$"
+        use_regex: yes
+      register: file
+
+    - name: Upload result file to bucket
+      gc_storage:
+        bucket: "{{ bucket }}"
+        gs_access_key: "{{ gs_access_key }}"
+        gs_secret_key: "{{ gs_secret_key }}"
+        object: "{{ file.files[0].path.split('/')[4] }}"
+        src: "{{ file.files[0].path }}"
+        mode: put
+        permission: public-read

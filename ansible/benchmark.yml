@@ -1,0 +1,76 @@
+---
+
+- hosts: localhost
+  connection: local
+  gather_facts: no
+  vars:
+    ################### MODIFY VARIABLES HERE ######################
+    gcp_region: us-east1
+    gcp_project: tpc-c-222411
+    bucket: 'storage-tcp-c'
+    #################################################################
+
+    gcp_cred_kind: serviceaccount
+    gcp_cred_file: '~/.gcloud/credentials-tpc-c.json'
+
+  roles:
+    # Create VM instances
+    - role: instances
+      vars:
+        gcp_zone: us-east1-b
+        gcp_machine_type: n1-standard-4
+        source_image: projects/centos-cloud/global/images/centos-7-v20181113
+        disk_size: 32
+        disks:
+          - disk-01
+        addresses:
+          - addr-01
+        instances:
+          - { index: 1, tag: benchmark }
+
+    # Create storage bucket
+    #- role: storage
+
+- hosts: all
+  become: yes
+  vars:
+    ################### MODIFY VARIABLES HERE ######################
+    user: claudia
+    gcp_project: tpc-c-222411
+    bucket: 'storage-tcp-c'
+    db_name: 'tpcc'
+    gs_access_key: 'GOOG7LPNDJF3TYHFGMMTKMBD'
+    gs_secret_key: 'cbA50GCTXbYyp4XsIaSmlW7UFKyuI+cqJLXRyL8p'
+    #################################################################
+
+    gcp_cred_file: '~/.gcloud/credentials-tpc-c.json'
+
+  roles:
+    # Install and configure PostgreSQL
+    - role: postgresql-config
+
+    # Create database and user
+    - role: postgresql-db
+      vars:
+        db_username: 'postgres'
+        db_password: 'postgres'
+
+    # Download benchmark files from storage
+    - role: benchmark
+
+    # Run database scripts (create tables, indexes and functions)
+    - role: scripts-db
+      vars:
+        path: "/home/{{ user }}/tpc-c-0.1-SNAPSHOT/etc/sql/postgresql"
+
+    # Configure database properties for the benchmark
+    - role: benchmark-db-config
+      vars:
+        db_username: 'postgres'
+        db_password: 'postgres'
+
+    # Populate database
+    - role: load
+      vars:
+        path: "/home/{{ user }}/tpc-c-0.1-SNAPSHOT"
+        dump_file: 'tpcc-01.gz'

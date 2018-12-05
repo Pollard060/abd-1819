@@ -1,0 +1,13 @@
+---
+
+- name: Change db.username of the database-config.properties file
+  replace:
+    path: "/home/{{ user }}/tpc-c-0.1-SNAPSHOT/etc/database-config.properties"
+    regexp: "^db.username=.*"
+    replace: "db.username={{ db_username }}"
+
+- name: Change db.password of the database-config.properties file
+  replace:
+    path: "/home/{{ user }}/tpc-c-0.1-SNAPSHOT/etc/database-config.properties"
+    regexp: "^db.password=.*"
+    replace: "db.password={{ db_password }}"
