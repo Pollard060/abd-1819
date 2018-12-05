@@ -40,5 +40,5 @@ Ansible playbooks to provision and test the TPC-C Benchmark:
 ## How to run
 
 ```shell
-$ ansible-playbook -i inventory.gcp.yml run.yml
+$ ansible-playbook -i inventory.gcp.yml playbook.yml
 ```
