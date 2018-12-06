@@ -3,15 +3,16 @@
   vars:
     ############### MODIFY VARIABLES AS NEEDED ###############
     user: claudia
-    bucket: 'storage-tcp-c'
-    gs_access_key: 'GOOG7LPNDJF3TYHFGMMTKMBD'
-    gs_secret_key: 'cbA50GCTXbYyp4XsIaSmlW7UFKyuI+cqJLXRyL8p'
+    bucket: 'tcp-c-3'
+    gs_access_key: 'GOOGNVTBQEKU373GCYLUNPMH'
+    gs_secret_key: 'IY4ag+Ya3Cg0ZrODWsOA7ScAeTM2lIH2nDsShulM'
     path: "/home/{{ user }}/tpc-c-0.1-SNAPSHOT"
     workload_file: "{{ path }}/etc/workload-config.properties"
 
     # Workload properties:
-    number_warehouses: '1'
-    measurement_time: '1'
+    number_warehouses: 10
+    measurement_time: 10
+    number_clients_wharehouse: 10
     ##########################################################
   tasks:
     - name: Replace number of warehouses
@@ -25,6 +26,24 @@
         path: "{{ workload_file }}"
         regexp: "^measurement.time=.*"
         replace: "measurement.time={{ measurement_time }}"
+
+    - name: Replace number of clients per warehouse
+      replace:
+        path: "{{ workload_file }}"
+        regexp: "^tpcc.numclients=.*"
+        replace: "tpcc.numclients={{ number_clients_wharehouse }}"
+
+    - name: Replace total clients
+      replace:
+        path: "{{ workload_file }}"
+        regexp: "^clients=.*"
+        replace: "clients={{ number_clients_wharehouse * number_warehouses }}"
+
+    - name: Set think time to true
+      replace:
+        path: "{{ workload_file }}"
+        regexp: "^measurement.think.time=.*"
+        replace: "measurement.think.time=true"
 
     - name: Run script
       shell: "./run.sh"
