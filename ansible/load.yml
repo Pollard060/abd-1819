@@ -2,11 +2,11 @@
   become: yes
   vars:
     ################### MODIFY VARIABLES HERE ######################
-    gcp_project: tpc-c-222411
-    bucket: 'storage-tcp-c'
-    db_name: 'tpcc'
-    gs_access_key: 'GOOG7LPNDJF3TYHFGMMTKMBD'
-    gs_secret_key: 'cbA50GCTXbYyp4XsIaSmlW7UFKyuI+cqJLXRyL8p'
+    gcp_project: project_id
+    bucket: bucket_name
+    db_name: db_name
+    gs_access_key: gs_access_key
+    gs_secret_key: gs_secret_key
     number_warehouses: 100
     #################################################################
 

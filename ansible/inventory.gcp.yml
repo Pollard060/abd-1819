@@ -1,6 +1,6 @@
 plugin: gcp_compute
 projects:
-  - tpc-c-222411
+  - project_id
 zones:
   - us-east1-b
 filters:

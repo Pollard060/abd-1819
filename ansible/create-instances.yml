@@ -6,8 +6,8 @@
   vars:
     ################### MODIFY VARIABLES HERE ######################
     gcp_region: us-east1
-    gcp_project: tpc-c-222411
-    bucket: 'storage-tcp-c'
+    gcp_project: project_id
+    bucket: bucket_name
     #################################################################
 
     gcp_cred_kind: serviceaccount
