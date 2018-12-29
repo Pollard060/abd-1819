@@ -1,0 +1,34 @@
+- hosts: all
+  become: yes
+  vars:
+    ################### MODIFY VARIABLES HERE ######################
+    gcp_project: tpc-c-222411
+    bucket: 'storage-tcp-c'
+    db_name: 'tpcc'
+    gs_access_key: 'GOOG7LPNDJF3TYHFGMMTKMBD'
+    gs_secret_key: 'cbA50GCTXbYyp4XsIaSmlW7UFKyuI+cqJLXRyL8p'
+    number_warehouses: 100
+    #################################################################
+
+    workload_file: "{{ path }}/etc/workload-config.properties"
+    dump_file: "tpcc-{{ number_warehouses }}-warehouses.dump"
+    path: "/home/postgres/tpc-c-0.1-SNAPSHOT"
+
+  roles:
+    # Drop database
+    - role: drop-db
+
+    # Create PostgreSQL database
+    - role: create-db
+
+    # Change workload properties
+    - role: workload-config
+
+    # Populate database
+    - role: load
+
+    # Dump database to dump_file
+    - role: dump-db
+
+    # Upload dump_file to storage
+    - role: upload-storage

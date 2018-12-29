@@ -1,0 +1,111 @@
+CREATE EXTENSION postgres_fdw;
+
+CREATE SERVER shard_01 FOREIGN DATA WRAPPER postgres_fdw
+OPTIONS (host 'shard-01', dbname 'tpcc_01');
+CREATE SERVER shard_02 FOREIGN DATA WRAPPER postgres_fdw
+OPTIONS (host 'shard-02', dbname 'tpcc_02');
+CREATE SERVER shard_03 FOREIGN DATA WRAPPER postgres_fdw
+OPTIONS (host 'shard-03', dbname 'tpcc_03');
+
+CREATE USER MAPPING FOR postgres SERVER shard_01 OPTIONS (user 'postgres', password 'postgres');
+CREATE USER MAPPING FOR postgres SERVER shard_02 OPTIONS (user 'postgres', password 'postgres');
+CREATE USER MAPPING FOR postgres SERVER shard_03 OPTIONS (user 'postgres', password 'postgres');
+
+CREATE FOREIGN TABLE customer_01
+PARTITION OF customer (c_w_id)
+FOR VALUES FROM (1) TO (31)
+SERVER shard_01;
+CREATE FOREIGN TABLE district_01
+PARTITION OF district (d_w_id)
+FOR VALUES FROM (1) TO (31)
+SERVER shard_01;
+CREATE FOREIGN TABLE history_01
+PARTITION OF history (h_w_id)
+FOR VALUES FROM (1) TO (31)
+SERVER shard_01;
+CREATE FOREIGN TABLE new_order_01
+PARTITION OF new_order (no_w_id)
+FOR VALUES FROM (1) TO (31)
+SERVER shard_01;
+CREATE FOREIGN TABLE order_line_01
+PARTITION OF order_line (ol_w_id)
+FOR VALUES FROM (1) TO (31)
+SERVER shard_01;
+CREATE FOREIGN TABLE orders_01
+PARTITION OF orders (o_w_id)
+FOR VALUES FROM (1) TO (31)
+SERVER shard_01;
+CREATE FOREIGN TABLE stock_01
+PARTITION OF stock (s_w_id)
+FOR VALUES FROM (1) TO (31)
+SERVER shard_01;
+CREATE FOREIGN TABLE warehouse_01
+PARTITION OF warehouse (w_id)
+FOR VALUES FROM (1) TO (31)
+SERVER shard_01;
+
+CREATE FOREIGN TABLE customer_02
+PARTITION OF customer (c_w_id)
+FOR VALUES FROM (31) TO (61)
+SERVER shard_02;
+CREATE FOREIGN TABLE district_02
+PARTITION OF district (d_w_id)
+FOR VALUES FROM (31) TO (61)
+SERVER shard_02;
+CREATE FOREIGN TABLE history_02
+PARTITION OF history (h_w_id)
+FOR VALUES FROM (31) TO (61)
+SERVER shard_02;
+CREATE FOREIGN TABLE new_order_02
+PARTITION OF new_order (no_w_id)
+FOR VALUES FROM (31) TO (61)
+SERVER shard_02;
+CREATE FOREIGN TABLE order_line_02
+PARTITION OF order_line (ol_w_id)
+FOR VALUES FROM (31) TO (61)
+SERVER shard_02;
+CREATE FOREIGN TABLE orders_02
+PARTITION OF orders (o_w_id)
+FOR VALUES FROM (31) TO (61)
+SERVER shard_02;
+CREATE FOREIGN TABLE stock_02
+PARTITION OF stock (s_w_id)
+FOR VALUES FROM (31) TO (61)
+SERVER shard_02;
+CREATE FOREIGN TABLE warehouse_02
+PARTITION OF warehouse (w_id)
+FOR VALUES FROM (31) TO (61)
+SERVER shard_02;
+
+CREATE FOREIGN TABLE customer_03
+PARTITION OF customer (c_w_id)
+FOR VALUES FROM (61) TO (91)
+SERVER shard_03;
+CREATE FOREIGN TABLE district_03
+PARTITION OF district (d_w_id)
+FOR VALUES FROM (61) TO (91)
+SERVER shard_03;
+CREATE FOREIGN TABLE history_03
+PARTITION OF history (h_w_id)
+FOR VALUES FROM (61) TO (91)
+SERVER shard_03;
+CREATE FOREIGN TABLE new_order_03
+PARTITION OF new_order (no_w_id)
+FOR VALUES FROM (61) TO (91)
+SERVER shard_03;
+CREATE FOREIGN TABLE order_line_03
+PARTITION OF order_line (ol_w_id)
+FOR VALUES FROM (61) TO (91)
+SERVER shard_03;
+CREATE FOREIGN TABLE orders_03
+PARTITION OF orders (o_w_id)
+FOR VALUES FROM (61) TO (91)
+SERVER shard_03;
+CREATE FOREIGN TABLE stock_03
+PARTITION OF stock (s_w_id)
+FOR VALUES FROM (61) TO (91)
+SERVER shard_03;
+CREATE FOREIGN TABLE warehouse_03
+PARTITION OF warehouse (w_id)
+FOR VALUES FROM (61) TO (91)
+SERVER shard_03;

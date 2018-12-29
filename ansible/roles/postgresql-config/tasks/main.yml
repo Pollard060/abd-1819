@@ -1,21 +1,24 @@
 ---
 
+- name: PostgreSQL
+  shell: rpm -ivh https://download.postgresql.org/pub/repos/yum/10/redhat/rhel-7-x86_64/pgdg-centos10-10-2.noarch.rpm
+
 - name: Install PostgreSQL
   yum:
     name: '{{ packages }}'
     state: latest
   vars:
     packages:
-    - postgresql-server
+    - postgresql10-server
     - postgresql-contrib
     - python-psycopg2
 
 - name: Create a new PostgreSQL database cluster
-  command: postgresql-setup initdb
+  shell: /usr/pgsql-10/bin/postgresql-10-setup initdb
 
 - name: Uncomment listen addresses configuration
   replace:
-    path: "/var/lib/pgsql/data/postgresql.conf"
+    path: "/var/lib/pgsql/10/data/postgresql.conf"
     regexp: '^#listen_addresses'
     replace: listen_addresses
   notify:
@@ -23,7 +26,7 @@
 
 - name: Replace listen addresses
   replace:
-    path: "/var/lib/pgsql/data/postgresql.conf"
+    path: "/var/lib/pgsql/10/data/postgresql.conf"
     regexp: "^listen_addresses\\s+=\\s+'(.*)'"
     replace: "listen_addresses = '*'"
   notify:
@@ -32,12 +35,12 @@
 - name: Add pg_hba.conf line to allow access from network
   template:
     src: pg_hba.conf.j2
-    dest: "/var/lib/pgsql/data/pg_hba.conf"
+    dest: "/var/lib/pgsql/10/data/pg_hba.conf"
   notify:
     - restart postgresql
 
 - name: Ensure service is enabled and started
   service:
-    name: postgresql
+    name: postgresql-10
     state: restarted
     enabled: yes

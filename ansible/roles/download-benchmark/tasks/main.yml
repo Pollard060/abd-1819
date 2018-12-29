@@ -6,7 +6,7 @@
     gs_access_key: "{{ gs_access_key }}"
     gs_secret_key: "{{ gs_secret_key }}"
     object: "{{ item }}"
-    dest: "/home/{{ user }}/{{ item }}"
+    dest: "/home/postgres/{{ item }}"
     mode: get
   loop:
     - tpc-c-0.1-SNAPSHOT-tpc-c.zip
@@ -14,7 +14,7 @@
 
 # Change showtpc.py mode
 - file:
-    path: "/home/{{ user }}/showtpc.py"
+    path: "/home/postgres/showtpc.py"
     mode: 0755
 
 - name: Install unzip
@@ -24,6 +24,6 @@
 
 - name: Unzip benchmark tpc-c-0.1-SNAPSHOT-tpc-c.zip
   unarchive:
-    src: "/home/{{ user }}/tpc-c-0.1-SNAPSHOT-tpc-c.zip"
-    dest: "/home/{{ user }}"
+    src: "/home/postgres/tpc-c-0.1-SNAPSHOT-tpc-c.zip"
+    dest: "/home/postgres"
     remote_src: yes

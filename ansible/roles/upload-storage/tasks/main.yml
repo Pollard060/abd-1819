@@ -1,0 +1,21 @@
+---
+
+- name: Change bucket permissions to public-read (if needed)
+  gc_storage:
+    bucket: "{{ bucket }}"
+    gs_access_key: "{{ gs_access_key }}"
+    gs_secret_key: "{{ gs_secret_key }}"
+    object: "{{ dump_file }}"
+    src: "{{ path }}/{{ dump_file }}"
+    mode: put
+    permission: public-read
+
+- name: Upload dump_file to bucket
+  gc_storage:
+    bucket: "{{ bucket }}"
+    gs_access_key: "{{ gs_access_key }}"
+    gs_secret_key: "{{ gs_secret_key }}"
+    object: "{{ dump_file }}"
+    src: "{{ path }}/{{ dump_file }}"
+    mode: put
+    permission: public-read

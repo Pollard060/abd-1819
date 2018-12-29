@@ -1,0 +1,35 @@
+---
+
+- name: Replace number of warehouses
+  replace:
+    path: "{{ workload_file }}"
+    regexp: "^tpcc.number.warehouses *=.*"
+    replace: "tpcc.number.warehouses = {{ number_warehouses }}"
+  when: number_warehouses is defined
+
+- name: Replace measurement time
+  replace:
+    path: "{{ workload_file }}"
+    regexp: "^measurement.time *=.*"
+    replace: "measurement.time = {{ measurement_time }}"
+  when: measurement_time is defined
+
+- name: Replace number of clients per warehouse
+  replace:
+    path: "{{ workload_file }}"
+    regexp: "^tpcc.numclients *=.*"
+    replace: "tpcc.numclients = {{ number_clients_wharehouse }}"
+  when: number_clients_wharehouse is defined
+
+# - name: Replace total clients
+#  replace:
+#    path: "{{ workload_file }}"
+#    regexp: "^clients *=.*"
+#    replace: "clients = {{ number_clients_wharehouse * number_warehouses }}"
+
+- name: Set think time to true
+  replace:
+    path: "{{ workload_file }}"
+    regexp: "^measurement.think.time *=.*"
+    replace: "measurement.think.time = {{ think_time }}"
+  when: think_time is defined

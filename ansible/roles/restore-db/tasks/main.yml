@@ -1,0 +1,5 @@
+---
+
+- name: Restore tpcc database from dump_file
+  become_user: postgres
+  shell: "/usr/pgsql-10/bin/pg_restore -Fc -d tpcc < /home/postgres/tpcc-90-warehouses.dump"

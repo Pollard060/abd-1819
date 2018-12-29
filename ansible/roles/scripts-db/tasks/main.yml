@@ -1,13 +1,14 @@
 ---
 
 - name: Populate database
-  shell: "for i in {{ path }}/{{ item }}; do cat $i | sudo -u postgres psql tpcc ; done"
+  become_user: postgres
+  shell: "for i in {{ path }}/{{ item }}; do cat $i | psql tpcc ; done"
   loop:
     - createtable.sql
+    - createindex.sql
+    - sequence.sql
     - neworder01
     - delivery01
     - payment01
     - orderstatus01
     - stocklevel01
-    - createindex.sql
-    - sequence.sql

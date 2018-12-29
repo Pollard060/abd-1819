@@ -1,0 +1,32 @@
+---
+
+- name: Create user called postgres with password postgres
+  user:
+    name: '{{ username }}'
+    password: '{{ password }}'
+    createhome: yes
+    groups: wheel
+    append: yes
+    state: present
+    
+
+- name: Prepare postgres for public key authentication
+  authorized_key:
+    user: "{{ username }}"
+    key: "{{ local_public_key }}"
+
+- name: Disable root and password authentication for OpenSSH
+  copy:
+    src: sshd_config
+    dest: /etc/ssh/sshd_config
+    mode: 0644
+    owner: root
+    group: root
+  notify:
+    Restart OpenSSH
+
+- name: Make sure OpenSSH service is enabled and running
+  service:
+    name: sshd
+    enabled: yes
+    state: started

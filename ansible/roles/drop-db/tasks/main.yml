@@ -1,0 +1,3 @@
+- name: Drop database
+  become_user: postgres
+  shell: "dropdb {{ db_name }}"

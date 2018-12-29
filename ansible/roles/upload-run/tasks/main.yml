@@ -1,0 +1,19 @@
+---
+
+- name: Find result file from run
+  find:
+    paths: "{{ path }}"
+    age: '-60'
+    age_stamp: ctime
+    patterns: "^.*\\.dat$"
+    use_regex: yes
+  register: file
+- name: Upload result file to bucket
+  gc_storage:
+    bucket: "{{ bucket }}"
+    gs_access_key: "{{ gs_access_key }}"
+    gs_secret_key: "{{ gs_secret_key }}"
+    object: "{{ file.files[0].path.split('/')[4] }}"
+    src: "{{ file.files[0].path }}"
+    mode: put
+    permission: public-read

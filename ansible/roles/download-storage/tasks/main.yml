@@ -1,0 +1,8 @@
+- name: Download dump_file from storage
+  gc_storage:
+    bucket: "{{ bucket }}"
+    gs_access_key: "{{ gs_access_key }}"
+    gs_secret_key: "{{ gs_secret_key }}"
+    object: "{{ dump_file }}"
+    dest: "{{ dest }}"
+    mode: get

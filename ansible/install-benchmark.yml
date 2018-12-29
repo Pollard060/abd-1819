@@ -1,0 +1,50 @@
+---
+
+- hosts: all
+  become: yes
+
+  roles:
+    # Create user postgres with password postgres
+    - role: user
+      vars:
+        username: postgres
+        password: "{{ lookup('file', 'hashed_password') }}"
+        member_of: sudo
+        local_public_key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+
+- hosts: all
+  become: yes
+  vars:
+    ################### MODIFY VARIABLES HERE ######################
+    gcp_project: tpc-c-222411
+    bucket: 'storage-tcp-c'
+    db_name: 'tpcc'
+    gs_access_key: 'GOOG7LPNDJF3TYHFGMMTKMBD'
+    gs_secret_key: 'cbA50GCTXbYyp4XsIaSmlW7UFKyuI+cqJLXRyL8p'
+    number_warehouses: 90
+    measurement_time: 30
+    number_clients_wharehouse: 7
+    think_time: 'true'
+    #################################################################
+
+    gcp_cred_file: '~/.gcloud/credentials-tpc-c.json'
+    workload_file: "{{ path }}/etc/workload-config.properties"
+    dump_file: "tpcc-dump-{{ number_warehouses }}.gz"
+    path: "/home/postgres/tpc-c-0.1-SNAPSHOT"
+
+  roles:
+    # Install benchmark dependencies
+    - role: dependencies
+
+    # Download benchmark files from storage
+    - role: download-benchmark
+
+    # Change workload properties
+    - role: workload-config
+
+    # Configure database properties for the benchmark
+    - role: benchmark-db-config
+      vars:
+        db_address: '10.142.0.3'
+        db_username: 'postgres'
+        db_password: 'postgres'

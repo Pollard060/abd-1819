@@ -1,0 +1,4 @@
+---
+
+- name: Dump tpcc database to dump_file
+  shell: "sudo -u postgres pg_dump -Fc tpcc > {{ path }}/tpcc-{{ number_warehouses }}-warehouses.dump"

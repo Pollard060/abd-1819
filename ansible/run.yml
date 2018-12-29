@@ -2,69 +2,43 @@
   become: yes 
   vars:
     ############### MODIFY VARIABLES AS NEEDED ###############
-    user: claudia
-    bucket: 'tcp-c-3'
-    gs_access_key: 'GOOGNVTBQEKU373GCYLUNPMH'
-    gs_secret_key: 'IY4ag+Ya3Cg0ZrODWsOA7ScAeTM2lIH2nDsShulM'
-    path: "/home/{{ user }}/tpc-c-0.1-SNAPSHOT"
-    workload_file: "{{ path }}/etc/workload-config.properties"
+    bucket: 'storage-tcp-c'
+    gs_access_key: 'GOOG7LPNDJF3TYHFGMMTKMBD'
+    gs_secret_key: 'cbA50GCTXbYyp4XsIaSmlW7UFKyuI+cqJLXRyL8p'
+    dump_file: '{{ path }}/tpcc-100-warehouses.dump'
+    db_name: 'tpcc'
 
     # Workload properties:
-    number_warehouses: 10
+    number_warehouses: 80
     measurement_time: 10
-    number_clients_wharehouse: 10
+    number_clients_wharehouse: 7
+    think_time: true
     ##########################################################
-  tasks:
-    - name: Replace number of warehouses
-      replace:
-        path: "{{ workload_file }}"
-        regexp: "^tpcc.number.warehouses=.*"
-        replace: "tpcc.number.warehouses={{ number_warehouses }}"
 
-    - name: Replace measurement time
-      replace:
-        path: "{{ workload_file }}"
-        regexp: "^measurement.time=.*"
-        replace: "measurement.time={{ measurement_time }}"
+    path: "/home/postgres/tpc-c-0.1-SNAPSHOT"
+    workload_file: "{{ path }}/etc/workload-config.properties"
 
-    - name: Replace number of clients per warehouse
-      replace:
-        path: "{{ workload_file }}"
-        regexp: "^tpcc.numclients=.*"
-        replace: "tpcc.numclients={{ number_clients_wharehouse }}"
+  roles:
+    # Download dump_file from storage
+    #- role: download-storage
+    #  vars:
+    #    object: "{{ dump_file }}"
+    #    dest: "{{ path }}/{{ dump_file }}"
 
-    - name: Replace total clients
-      replace:
-        path: "{{ workload_file }}"
-        regexp: "^clients=.*"
-        replace: "clients={{ number_clients_wharehouse * number_warehouses }}"
+    # Change workload properties
+    - role: workload-config
 
-    - name: Set think time to true
-      replace:
-        path: "{{ workload_file }}"
-        regexp: "^measurement.think.time=.*"
-        replace: "measurement.think.time=true"
+    # Drop database
+    - role: drop-db
 
-    - name: Run script
-      shell: "./run.sh"
-      args:
-        chdir: "{{ path }}"
+    # Create database
+    - role: create-db
 
-    - name: Find result file from run
-      find:
-        paths: "{{ path }}"
-        age: '-10'
-        age_stamp: ctime
-        patterns: "^.*\\.dat$"
-        use_regex: yes
-      register: file
+    # Restore database
+    - role: restore-db
 
-    - name: Upload result file to bucket
-      gc_storage:
-        bucket: "{{ bucket }}"
-        gs_access_key: "{{ gs_access_key }}"
-        gs_secret_key: "{{ gs_secret_key }}"
-        object: "{{ file.files[0].path.split('/')[4] }}"
-        src: "{{ file.files[0].path }}"
-        mode: put
-        permission: public-read
+    # Run benchmark
+    - role: run
+
+    # Upload results to storage
+    - role: upload-run

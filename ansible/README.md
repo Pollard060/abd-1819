@@ -1,11 +1,17 @@
 # TPC-C Benchmark Ansible playbook
 Ansible playbooks to provision and test the TPC-C Benchmark:
 
-* **benchmark.yml:** Used to create VM instances, install TPC-C Benchmark and PostgreSQL, populate the database and save a backup in the storage bucket.
+* **create-instances.yml:** create VM instances on Google Cloud Platform with certain hardware specifications and create a bucket, if needed.
 
-* **run.yml:** Used to run the TPC-C Benchmark with different workload propertied and save the result in the storage bucket.
+* **install-benchmark.yml:** download TPC-C benchmark from bucket and install it.
 
-* **teardown.yml:** Used to delete the VM instances that were created with the benchmark playbook.
+* **install-db.yml:** install and configurate PostgreSQL.
+
+* **load.yml:** populate database with a certain number os warehouses, dump database and upload backup to bucket.
+
+* **run.yml:** restore database from a dump file, configurate workload properties, run benchmark and upload result to bucket.
+
+* **teardown-instances.yml:** removes instances from Google Cloud Platform.
 
 ## Configurations
 
@@ -23,8 +29,6 @@ Ansible playbooks to provision and test the TPC-C Benchmark:
 
 ### Playbooks variables
 
-`user` your username
-
 `gcp_region` region where the VM instances and the storage bucket will be created
 
 `gcp_project` project ID
@@ -40,5 +44,5 @@ Ansible playbooks to provision and test the TPC-C Benchmark:
 ## How to run
 
 ```shell
-$ ansible-playbook -i inventory.gcp.yml playbook.yml
+$ ansible-playbook playbook.yml
 ```
